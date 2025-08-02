@@ -1,85 +1,53 @@
 import streamlit as st
 import firebase_admin
-from firebase_admin import credentials, firestore
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from firebase_admin import credentials, storage
 from gtts import gTTS
 import json
 import os
 import time
 
-# -------------------------------
-# 1️⃣ Initialize Firebase
-# -------------------------------
-firebase_key = json.loads(st.secrets["FIREBASE_KEY"])
+# -----------------------------
+# Initialize Firebase
+# -----------------------------
+firebase_key_dict = json.loads(st.secrets["FIREBASE_KEY"])
+
 if not firebase_admin._apps:
-    cred = credentials.Certificate(firebase_key)
-    firebase_admin.initialize_app(cred)
+    cred = credentials.Certificate(firebase_key_dict)
+    firebase_admin.initialize_app(cred, {
+        'storageBucket': f"{firebase_key_dict['project_id']}.appspot.com"
+    })
 
-db = firestore.client()
+bucket = storage.bucket()
 
-# -------------------------------
-# 2️⃣ Streamlit App UI
-# -------------------------------
-st.title("🌟 AI Wellness SaaS - Audio Motivation App")
+# -----------------------------
+# Streamlit UI
+# -----------------------------
+st.title("🎵 AI Wellness SaaS - Audio Generator")
+st.write("Enter any motivational message, and I’ll generate an audio file for you!")
 
-st.write("Welcome! This app generates motivational audio messages and stores user info in Firebase.")
+text_input = st.text_area("Enter your message:", "Believe in yourself, and success will follow!")
 
-name = st.text_input("Enter your name")
-email = st.text_input("Enter your email")
-message = st.text_area("Enter a motivational message to convert to audio")
+if st.button("Generate Audio"):
+    if text_input.strip():
+        with st.spinner("Generating audio..."):
+            # Create audio file
+            tts = gTTS(text=text_input, lang='en')
+            filename = f"voice_{int(time.time())}.mp3"
+            local_path = filename
+            tts.save(local_path)
 
-if st.button("Generate & Send Audio"):
-    if name and email and message:
-        # -------------------------------
-        # 3️⃣ Save user info to Firebase
-        # -------------------------------
-        user_data = {
-            "name": name,
-            "email": email,
-            "message": message,
-            "timestamp": firestore.SERVER_TIMESTAMP
-        }
-        db.collection("users").add(user_data)
+            # Upload to Firebase Storage
+            blob = bucket.blob(f"audio/{filename}")
+            blob.upload_from_filename(local_path)
+            blob.make_public()
+            audio_url = blob.public_url
 
-        # -------------------------------
-        # 4️⃣ Generate TTS Audio
-        # -------------------------------
-        audio_filename = f"voice_{int(time.time())}.mp3"
-        tts = gTTS(text=message, lang='en')
-        tts.save(audio_filename)
+            # Play audio & show link
+            st.audio(local_path)
+            st.success("✅ Audio generated & uploaded!")
+            st.markdown(f"[🔗 Download Your Audio Here]({audio_url})")
 
-        st.audio(audio_filename, format="audio/mp3")
-        st.success("Audio generated successfully! 🎵")
-
-        # -------------------------------
-        # 5️⃣ Send Email Notification
-        # -------------------------------
-        try:
-            smtp_email = st.secrets["SMTP_EMAIL"]
-            smtp_pass = st.secrets["SMTP_PASSWORD"]
-
-            msg = MIMEMultipart()
-            msg['From'] = smtp_email
-            msg['To'] = email
-            msg['Subject'] = "Your Motivational Audio from AI Wellness SaaS"
-            body = f"Hi {name},\n\nHere is your motivational message:\n\n{message}\n\nStay Positive! 🌟"
-            msg.attach(MIMEText(body, 'plain'))
-
-            # Send via Gmail SMTP
-            server = smtplib.SMTP('smtp.gmail.com', 587)
-            server.starttls()
-            server.login(smtp_email, smtp_pass)
-            server.send_message(msg)
-            server.quit()
-
-            st.success("Email sent successfully! 📧")
-        except Exception as e:
-            st.error(f"Failed to send email: {e}")
-
-        # Clean up local audio file
-        os.remove(audio_filename)
-
+            # Clean up local file
+            os.remove(local_path)
     else:
-        st.error("⚠️ Please fill all fields before generating audio.")
+        st.warning("Please enter a message first!")

@@ -15,10 +15,10 @@ from email.mime.text import MIMEText
 
 # ---------------------------
 # 1. Firebase Init
-if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase_key.json")  # Your Firebase Admin SDK Key
-    firebase_admin.initialize_app(cred)
-db = firestore.client()
+#if not firebase_admin._apps:
+    #cred = credentials.Certificate("firebase_key.json")  # Your Firebase Admin SDK Key
+    #firebase_admin.initialize_app(cred)
+#db = firestore.client()
 
 # ---------------------------
 # 2. Email Config (replace with your Gmail + App Password)

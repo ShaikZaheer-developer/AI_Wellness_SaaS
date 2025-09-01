@@ -1,8 +1,8 @@
 🌟 AI Wellness SaaS App – Sentiment Analysis & Motivational Voice AI
 
-🔗 Live App: Try Here
+🔗 Live App: [Try NOw](https://ai-wellness-saas.streamlit.app/)
 
-💻 GitHub Repo: View Code
+💻 GitHub Repo: [View Code](https://github.com/ShaikZaheer-developer/AI_Wellness_SaaS)
 
 📌 Overview
 
@@ -99,6 +99,4 @@ I’m passionate about building AI products that impact millions, and this proje
 
 Zaheer Shaik
 
-📧 zaheershaik97042@gmail.com
-
-🔗 LinkedIn
+🔗  [LINKEDIN](https://www.linkedin.com/in/zaheershaik2/)

@@ -46,10 +46,6 @@ Visualization: Matplotlib / Streamlit charts
 
 ✅ Automated audio email delivery to inbox
 
-📷 Screenshots
-
-(Add screenshots of your Streamlit app UI, mood chart, and email example here – even 2–3 images will make it 10x more impressive.)
-
 📖 How to Run Locally
 
 Clone this repo:
